@@ -1,0 +1,127 @@
+
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getPropertyById } from "@/lib/mockData";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CalendarIcon, MapPin, Home, User } from "lucide-react";
+import BookingForm from "@/components/BookingForm";
+import { useToast } from "@/components/ui/use-toast";
+
+const PropertyDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const property = getPropertyById(id || "");
+  const [showBookingForm, setShowBookingForm] = useState(false);
+
+  if (!property) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Property Not Found</h1>
+        <Button onClick={() => navigate("/")}>Return to Home</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            &larr; Back
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <h1 className="text-3xl md:text-4xl font-heading font-bold">{property.title}</h1>
+              <div className="flex items-center text-muted-foreground mt-2">
+                <MapPin className="h-4 w-4 mr-1" />
+                <p>
+                  {property.address.street}, {property.address.city}, {property.address.state} {property.address.zipCode}
+                </p>
+              </div>
+            </div>
+
+            <div className="aspect-[16/9] overflow-hidden rounded-lg mb-8">
+              <img 
+                src={property.imageUrl} 
+                alt={property.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold mb-4">About this property</h2>
+              <p className="text-muted-foreground">{property.description}</p>
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-2xl font-heading font-semibold mb-4">Property details</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex items-center">
+                  <Home className="h-5 w-5 mr-2 text-primary" />
+                  <span>{property.bedrooms} Bedrooms</span>
+                </div>
+                <div className="flex items-center">
+                  <Home className="h-5 w-5 mr-2 text-primary" />
+                  <span>{property.bathrooms} Bathrooms</span>
+                </div>
+                <div className="flex items-center">
+                  <Home className="h-5 w-5 mr-2 text-primary" />
+                  <span>{property.squareFeet} sq ft</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Card className="sticky top-8">
+              <CardContent className="pt-6">
+                <div className="text-center mb-6">
+                  <p className="text-3xl font-bold text-primary">${property.price}</p>
+                  <p className="text-muted-foreground">per month</p>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-2 flex items-center">
+                    <User className="h-4 w-4 mr-2" /> Owner
+                  </h3>
+                  <p>{property.owner.name}</p>
+                  <p className="text-sm text-muted-foreground">{property.owner.email}</p>
+                  <p className="text-sm text-muted-foreground">{property.owner.phone}</p>
+                </div>
+
+                {!showBookingForm ? (
+                  <Button className="w-full" onClick={() => setShowBookingForm(true)}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Book Property
+                  </Button>
+                ) : (
+                  <BookingForm 
+                    propertyId={property.id}
+                    propertyTitle={property.title}
+                    propertyPrice={property.price}
+                    onCancel={() => setShowBookingForm(false)}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-auto">
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default PropertyDetails;

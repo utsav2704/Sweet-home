@@ -1,0 +1,120 @@
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { CalendarIcon } from "lucide-react";
+
+interface BookingFormProps {
+  propertyId: string;
+  propertyTitle: string;
+  propertyPrice: number;
+  onCancel: () => void;
+}
+
+const BookingForm = ({
+  propertyId,
+  propertyTitle,
+  propertyPrice,
+  onCancel
+}: BookingFormProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [moveInDate, setMoveInDate] = useState("");
+  const [duration, setDuration] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      // Generate a booking ID
+      const bookingId = `booking-${Date.now()}`;
+      
+      // Navigate to confirmation page with booking details
+      navigate(`/booking-confirmation`, {
+        state: {
+          bookingId,
+          propertyId,
+          propertyTitle,
+          propertyPrice,
+          moveInDate,
+          duration,
+          totalPrice: propertyPrice * duration
+        }
+      });
+      
+      setLoading(false);
+    }, 1500);
+
+    toast({
+      title: "Processing booking...",
+      description: "Please wait while we process your booking request."
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="moveInDate">Move-in Date</Label>
+        <div className="relative">
+          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+          <Input
+            id="moveInDate"
+            type="date"
+            required
+            className="pl-10"
+            value={moveInDate}
+            min={new Date().toISOString().split('T')[0]}
+            onChange={(e) => setMoveInDate(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="duration">Rental Duration (months)</Label>
+        <Input
+          id="duration"
+          type="number"
+          min="1"
+          max="60"
+          required
+          value={duration}
+          onChange={(e) => setDuration(parseInt(e.target.value))}
+        />
+      </div>
+
+      {moveInDate && duration > 0 && (
+        <div className="pt-4 border-t">
+          <div className="flex justify-between items-center mb-2">
+            <span>Monthly rent:</span>
+            <span>${propertyPrice}</span>
+          </div>
+          <div className="flex justify-between items-center mb-2">
+            <span>Duration:</span>
+            <span>{duration} month{duration !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="flex justify-between items-center font-bold">
+            <span>Total price:</span>
+            <span>${propertyPrice * duration}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading} className="flex-1">
+          {loading ? "Processing..." : "Book Now"}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export default BookingForm;
